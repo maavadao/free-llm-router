@@ -1,0 +1,113 @@
+{
+  "$comment": "Free-tier providers and the models maava AI offers. Free tiers change often: check each provider's limits and terms before relying on them. A provider is used only when its key variable is set. Limits are per key; the router keeps under them and fails over when a provider says no. dataUse: 'no-training' (the provider says prompts aren't used for training), 'may-train' (free-tier prompts may be used to train or improve models), or 'unknown'. Checked 2026-11-09 against https://github.com/mnfst/awesome-free-llm-apis.",
+  "providers": {
+    "groq": {
+      "name": "Groq",
+      "baseUrl": "https://api.groq.com/openai/v1",
+      "keyEnv": "GROQ_API_KEY",
+      "dataUse": "unknown",
+      "models": {
+        "openai/gpt-oss-120b": { "context": 131072, "rpm": 30, "rpd": 1000 },
+        "openai/gpt-oss-20b": { "context": 131072, "rpm": 30, "rpd": 1000 },
+        "qwen/qwen3.8-27b": { "context": 131072, "rpm": 30, "rpd": 1000 }
+      }
+    },
+    "cerebras": {
+      "name": "Cerebras",
+      "baseUrl": "https://api.cerebras.ai/v1",
+      "keyEnv": "CEREBRAS_API_KEY",
+      "dataUse": "unknown",
+      "models": {
+        "gpt-oss-120b": { "context": 8192, "rpm": 30, "rpd": 14400 },
+        "qwen-3-235b-a22b-instruct-2507": { "context": 8192, "rpm": 30, "rpd": 14400 }
+      }
+    },
+    "nvidia": {
+      "name": "NVIDIA NIM",
+      "baseUrl": "https://integrate.api.nvidia.com/v1",
+      "keyEnv": "NVIDIA_API_KEY",
+      "dataUse": "may-train",
+      "models": {
+        "nvidia/nemotron-3-ultra-550b-a55b": { "context": 1000000, "rpm": 40, "rpd": 10000 },
+        "google/gemma-4-31b-it": { "context": 262144, "rpm": 40, "rpd": 10000 },
+        "openai/gpt-oss-20b": { "context": 131072, "rpm": 40, "rpd": 10000 }
+      }
+    },
+    "mistral": {
+      "name": "Mistral",
+      "baseUrl": "https://api.mistral.ai/v1",
+      "keyEnv": "MISTRAL_API_KEY",
+      "dataUse": "may-train",
+      "models": {
+        "mistral-medium-latest": { "context": 262144, "rpm": 60 },
+        "mistral-small-latest": { "context": 262144, "rpm": 60 }
+      }
+    },
+    "openrouter": {
+      "name": "OpenRouter",
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "keyEnv": "OPENROUTER_API_KEY",
+      "dataUse": "may-train",
+      "models": {
+        "nvidia/nemotron-3-ultra-550b-a55b:free": { "context": 1000000, "rpm": 20, "rpd": 50, "pool": "free" },
+        "nvidia/nemotron-3.5-lightning:free": { "context": 1000000, "rpm": 20, "rpd": 50, "pool": "free" }
+      },
+      "$comment": "OpenRouter's 20 RPM and 50 RPD are shared across all :free models, hence the shared pool."
+    },
+    "gemini": {
+      "name": "Google Gemini",
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "keyEnv": "GEMINI_API_KEY",
+      "dataUse": "may-train",
+      "enabled": false,
+      "$comment": "Off by default: Google's terms require Paid Services when an app is offered to users in the EEA, Switzerland or the UK. Turn on only with a paid key or for a deployment that serves no one there.",
+      "models": {
+        "gemini-2.5-flash": { "context": 1000000, "rpm": 10 }
+      }
+    }
+  },
+  "aliases": {
+    "auto": {
+      "label": "Auto",
+      "description": "The best free model that's available right now.",
+      "routes": [
+        "groq/openai/gpt-oss-120b",
+        "cerebras/gpt-oss-120b",
+        "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
+        "mistral/mistral-medium-latest",
+        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "groq/qwen/qwen3.8-27b",
+        "cerebras/qwen-3-235b-a22b-instruct-2507",
+        "groq/openai/gpt-oss-20b",
+        "nvidia/openai/gpt-oss-20b",
+        "mistral/mistral-small-latest",
+        "gemini/gemini-2.5-flash"
+      ]
+    },
+    "gpt-oss-120b": {
+      "label": "GPT-OSS 120B",
+      "description": "OpenAI's open-weight model. Strong all-rounder.",
+      "routes": ["groq/openai/gpt-oss-120b", "cerebras/gpt-oss-120b"]
+    },
+    "nemotron-ultra": {
+      "label": "Nemotron 3 Ultra",
+      "description": "NVIDIA's largest open model, with a very long context.",
+      "routes": ["nvidia/nvidia/nemotron-3-ultra-550b-a55b", "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"]
+    },
+    "qwen": {
+      "label": "Qwen 3",
+      "description": "Alibaba's open model. Good at maths and many languages.",
+      "routes": ["cerebras/qwen-3-235b-a22b-instruct-2507", "groq/qwen/qwen3.8-27b"]
+    },
+    "mistral": {
+      "label": "Mistral",
+      "description": "Mistral's European models. Good at writing and languages.",
+      "routes": ["mistral/mistral-medium-latest", "mistral/mistral-small-latest"]
+    },
+    "fast": {
+      "label": "Fast",
+      "description": "A smaller model for quick answers.",
+      "routes": ["groq/openai/gpt-oss-20b", "nvidia/openai/gpt-oss-20b", "openrouter/nvidia/nemotron-3.5-lightning:free"]
+    }
+  }
+}
