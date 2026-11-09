@@ -81,8 +81,11 @@ export class Router {
       if (!this.usable(route, tokens)) continue;
       this.usage.hit(quotaKey(route));
 
-      const timeout = AbortSignal.timeout(this.settings.upstreamTimeoutMs);
-      const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
+      // The timeout covers waiting for the provider to start answering, not the whole reply:
+      // a long answer (or long reasoning) can stream for minutes.
+      const waiting = new AbortController();
+      const timer = setTimeout(() => waiting.abort(), this.settings.upstreamTimeoutMs);
+      const combined = signal ? AbortSignal.any([signal, waiting.signal]) : waiting.signal;
       let response: Response;
       try {
         response = await this.fetch(`${route.provider.baseUrl}/chat/completions`, {
@@ -95,12 +98,14 @@ export class Router {
           signal: combined,
         });
       } catch {
+        clearTimeout(timer);
         if (signal?.aborted) break;
-        attempts.push({ route: routeKey(route), status: timeout.aborted ? "timeout" : "error" });
+        attempts.push({ route: routeKey(route), status: waiting.signal.aborted ? "timeout" : "error" });
         this.cooldowns.set(route.provider.id, 30_000);
         continue;
       }
 
+      clearTimeout(timer);
       if (response.ok) return { ok: true, route, response, attempts };
 
       attempts.push({ route: routeKey(route), status: response.status });

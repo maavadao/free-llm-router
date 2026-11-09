@@ -2,6 +2,8 @@
 
 One OpenAI-compatible endpoint over free-tier LLM providers. It powers **maava AI**, the free chat that maavaDao offers its community and students at [maavadao.com/chat](https://maavadao.com/chat).
 
+**It works with no keys at all.** Out of the box it uses three free public endpoints that need no account: OVHcloud AI Endpoints (EU-hosted GPT-OSS, Qwen, Llama and Mistral), Kilo Code's free pool and LLM7. Provider keys only add capacity on top.
+
 You ask for a model by a friendly name (`auto`, `gpt-oss-120b`, `qwen`…). The router sends the request to the first provider in that name's list that has a key, isn't cooling down, is under its free-tier limits and has a large enough context. If a provider says no (429, an outage, a timeout) before it starts answering, the router sets it aside and tries the next one. The reply streams straight through.
 
 - **No runtime dependencies.** Node 24 runs the TypeScript sources directly (type stripping), so there's no build step.
@@ -42,6 +44,9 @@ Everything lives in [`config/providers.json`](config/providers.json): each provi
 
 | Provider | Key | Data use on the free tier | Notes |
 | --- | --- | --- | --- |
+| OVHcloud AI Endpoints | none | not stated | Keyless anonymous tier, hosted in the EU: 2 requests a minute per IP, per model. GPT-OSS 120B and 20B, Qwen 3.5 397B, Qwen 3.8 27B, Llama 3.3 70B, Mistral Small. |
+| Kilo Code | none | may train | Keyless free pool, 200 requests an hour per IP across its `:free` models. Kilo says the pool may route to providers that log prompts. |
+| LLM7.io | none | not stated | Keyless "turbo" models (GPT-OSS 20B, Llama 4 Maverick, Mistral Small). Anonymous limits aren't published; the router stays at 4 a minute per model. Its terms describe it as for experimentation, development and research. |
 | Groq | `GROQ_API_KEY` | not stated | Very fast. About 30 requests a minute and 1,000 a day per model. |
 | Cerebras | `CEREBRAS_API_KEY` | not stated | Fast; free tier caps context at about 8K tokens. |
 | NVIDIA NIM | `NVIDIA_API_KEY` | may train | Developer Program access, 40 requests a minute. NVIDIA calls it trial use and logs usage to improve its products. |
@@ -50,6 +55,12 @@ Everything lives in [`config/providers.json`](config/providers.json): each provi
 | Google Gemini | `GEMINI_API_KEY` | may train | **Off by default.** Google's terms require Paid Services when an app is offered to users in the EEA, Switzerland or the UK. |
 
 Free tiers, model names and terms change often. The list was checked on 2026-11-09 against [mnfst/awesome-free-llm-apis](https://github.com/mnfst/awesome-free-llm-apis); check each provider's own pages before relying on a number.
+
+## How much can it serve?
+
+Keyless limits are per IP address, and a deployed router has one, so every member shares them: roughly 15–20 replies a minute across the keyless providers. Each provider key adds that provider's own free allowance on top. That's how aggregators such as [OmniRoute](https://github.com/diegosouzapw/OmniRoute) reach "~1.6B free tokens a month": it's the sum of one account's free tier at each of dozens of providers (Mistral's free plan alone is about 1B), not a grant anyone hands out. For maavaDao it means one shared budget for everyone, sized by the keys we add, not 1B tokens per member.
+
+Pollinations' keyless text API also answers, but it isn't included: anonymous requests carry a hidden prompt and it has injected promotions into anonymous replies, which isn't right for a service used by children. Web-chat scrapers (DuckDuckGo, Cloudflare Playground and the like) are never used: their terms forbid it.
 
 ## Before serving the public
 

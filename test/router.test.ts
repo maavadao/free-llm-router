@@ -175,3 +175,28 @@ test("HTTP: needs the token, lists models and streams the upstream reply through
     server.close();
   }
 });
+
+test("the upstream timeout covers the wait for headers, not a long reply", async () => {
+  const e = env({ ROUTER_UPSTREAM_TIMEOUT_MS: "50" });
+  const settings = loadSettings(e);
+  const slowBody = () =>
+    new Response(
+      new ReadableStream({
+        async start(c) {
+          c.enqueue(new TextEncoder().encode("part one "));
+          await new Promise((r) => setTimeout(r, 150));
+          c.enqueue(new TextEncoder().encode("part two"));
+          c.close();
+        },
+      }),
+    );
+  const router = new Router(loadConfig(e, settings), settings, (async (_url: unknown, init?: RequestInit) => {
+    const res = slowBody();
+    // Behave like fetch: an abort on the signal errors the body that's still streaming.
+    init?.signal?.addEventListener("abort", () => void res.body?.cancel());
+    return res;
+  }) as typeof fetch);
+  const r = await router.route("auto", request());
+  assert.ok(r.ok);
+  assert.equal(await r.response.text(), "part one part two");
+});
