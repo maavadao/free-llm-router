@@ -70,12 +70,17 @@ Pollinations' keyless text API also answers, but it isn't included: anonymous re
 
 ## Deploy
 
-GitHub Actions builds the image through maavaDao's shared workflow and, on `main`, pushes `europe-west1-docker.pkg.dev/mawadao/mawadao/free-llm-router`. To run it on Cloud Run:
+GitHub Actions builds the image through maavaDao's shared workflow and, on `main`, pushes `europe-west1-docker.pkg.dev/mawadao/mawadao/free-llm-router:main`. Three scripts run it on Cloud Run (project `mawadao`, as `raj@ulejra.ai`; set `PROJECT`, `REGION` or `ACCOUNT` to change):
 
-1. Put `ROUTER_TOKENS` and the provider keys in Secret Manager.
-2. Create the service with those secrets mounted as variables and `--max-instances=1`. Keep it private to the website if you can: the website is its only client.
-3. Add `service: free-llm-router` to `.github/workflows/deploy.yml` so `main` deploys it.
-4. Give the website `LLM_ROUTER_URL` and one of the tokens as `LLM_ROUTER_TOKEN`.
+```sh
+scripts/create-token.sh        # a random token for the website, straight into Secret Manager; never printed
+scripts/add-key.sh groq        # optional, per provider: paste the key at a hidden prompt
+scripts/deploy.sh              # deploys the router (one instance) and points the website at it
+```
+
+`deploy.sh` mounts the token and every provider key that exists in Secret Manager (`llm-<provider>-api-key`), so adding a key later is `add-key.sh` then `deploy.sh` again. Pass router settings with `ROUTER_ENV`, for example `ROUTER_ENV=ROUTER_NO_TRAINING=1 scripts/deploy.sh`. With no provider keys at all, the router serves the keyless providers.
+
+The service accepts requests from anywhere but answers only with the token. Once it exists, adding `service: free-llm-router` to `.github/workflows/deploy.yml` makes every push to `main` redeploy it.
 
 ## Licence
 
