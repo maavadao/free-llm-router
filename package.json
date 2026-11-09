@@ -1,5 +1,5 @@
 {
-  "name": "llm-router",
+  "name": "free-llm-router",
   "version": "0.1.0",
   "private": true,
   "description": "One OpenAI-compatible endpoint over free-tier LLM providers, with fallback and limits. Serves maava AI.",

@@ -1,4 +1,4 @@
-# llm-router
+# free-llm-router
 
 One OpenAI-compatible endpoint over free-tier LLM providers. It powers **maava AI**, the free chat that maavaDao offers its community and students at [maavadao.com/chat](https://maavadao.com/chat).
 
@@ -59,11 +59,11 @@ Free tiers, model names and terms change often. The list was checked on 2026-11-
 
 ## Deploy
 
-GitHub Actions builds the image through maavaDao's shared workflow and, on `main`, pushes `europe-west1-docker.pkg.dev/mawadao/mawadao/llm-router`. To run it on Cloud Run:
+GitHub Actions builds the image through maavaDao's shared workflow and, on `main`, pushes `europe-west1-docker.pkg.dev/mawadao/mawadao/free-llm-router`. To run it on Cloud Run:
 
 1. Put `ROUTER_TOKENS` and the provider keys in Secret Manager.
 2. Create the service with those secrets mounted as variables and `--max-instances=1`. Keep it private to the website if you can: the website is its only client.
-3. Add `service: llm-router` to `.github/workflows/deploy.yml` so `main` deploys it.
+3. Add `service: free-llm-router` to `.github/workflows/deploy.yml` so `main` deploys it.
 4. Give the website `LLM_ROUTER_URL` and one of the tokens as `LLM_ROUTER_TOKEN`.
 
 ## Licence

@@ -1,8 +1,8 @@
 name: Build image
 
-# Builds the container on GitHub Actions; on main, pushes it to Artifact Registry as llm-router.
+# Builds the container on GitHub Actions; on main, pushes it to Artifact Registry as free-llm-router.
 # It isn't deployed to Cloud Run yet: that needs ROUTER_TOKENS and provider keys in Secret Manager
-# first (see README). Then add `service: llm-router` below.
+# first (see README). Then add `service: free-llm-router` below.
 
 on:
   push:
@@ -19,4 +19,4 @@ jobs:
   cloud-run:
     uses: maavadao/.github/.github/workflows/cloud-run.yml@main
     with:
-      image: llm-router
+      image: free-llm-router
