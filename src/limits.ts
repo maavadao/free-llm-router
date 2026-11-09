@@ -33,6 +33,17 @@ export class Counter {
     return true;
   }
 
+  /** Requests in the last minute. */
+  minuteCount(key: string) {
+    return this.recent(key).length;
+  }
+
+  /** Requests today (UTC). */
+  dayCount(key: string) {
+    const d = this.day.get(key);
+    return d && d.day === this.today() ? d.count : 0;
+  }
+
   /** Records one request. */
   hit(key: string) {
     this.recent(key).push(this.now());

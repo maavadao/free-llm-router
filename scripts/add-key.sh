@@ -15,4 +15,10 @@ echo
 ensure_secret "$secret"
 printf %s "$key" | "${GC[@]}" secrets versions add "$secret" --data-file=- >/dev/null
 unset key
+if [[ "$provider" == cloudflare ]]; then
+  read -rp "Cloudflare account id (from the dashboard's Workers AI page): " account
+  [[ "$account" =~ ^[0-9a-f]{32}$ ]] || { echo "That doesn't look like an account id (32 hex characters)." >&2; exit 1; }
+  ensure_secret "$CF_ACCOUNT_SECRET"
+  printf %s "$account" | "${GC[@]}" secrets versions add "$CF_ACCOUNT_SECRET" --data-file=- >/dev/null
+fi
 echo "Saved as ${secret}. Run scripts/deploy.sh to start using it."

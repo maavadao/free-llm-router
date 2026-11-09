@@ -16,7 +16,12 @@ for p in "${PROVIDERS[@]}"; do
     echo "  using $p key"
   fi
 done
-for s in free-llm-router-token $(for p in "${PROVIDERS[@]}"; do secret_exists "$(secret_name "$p")" && secret_name "$p"; done); do
+used=(free-llm-router-token $(for p in "${PROVIDERS[@]}"; do secret_exists "$(secret_name "$p")" && secret_name "$p"; done))
+if secret_exists "$CF_ACCOUNT_SECRET"; then
+  secrets+=",CLOUDFLARE_ACCOUNT_ID=$CF_ACCOUNT_SECRET:latest"
+  used+=("$CF_ACCOUNT_SECRET")
+fi
+for s in "${used[@]}"; do
   "${GC[@]}" secrets add-iam-policy-binding "$s" --member="serviceAccount:$runtime_sa" --role=roles/secretmanager.secretAccessor >/dev/null
 done
 

@@ -3,7 +3,8 @@ import { timingSafeEqual } from "node:crypto";
 import { Readable } from "node:stream";
 import { loadConfig, loadSettings, type Settings } from "./config.ts";
 import { Counter } from "./limits.ts";
-import { Router, type ChatMessage, type ChatRequest } from "./router.ts";
+import { Router, estimateTokens, type ChatMessage, type ChatRequest } from "./router.ts";
+import { UsageTap } from "./budget.ts";
 
 const MAX_BODY = 1_000_000;
 
@@ -59,6 +60,7 @@ export function createApp(router: Router, settings: Settings) {
   setInterval(() => {
     users.sweep();
     router.usage.sweep();
+    router.ledger.sweep();
   }, 10 * 60_000).unref();
 
   return createServer(async (req, res) => {
@@ -80,8 +82,13 @@ export function createApp(router: Router, settings: Settings) {
           available: router.configured(a),
           providers: [...new Set(a.routes.filter((r) => r.provider.enabled).map((r) => r.provider.name))],
           may_train: a.routes.some((r) => r.provider.enabled && r.provider.dataUse === "may-train"),
+          strategy: a.strategy,
         }));
         return send(res, 200, { object: "list", data });
+      }
+
+      if (req.method === "GET" && url.pathname === "/v1/budget") {
+        return send(res, 200, router.budget(), { "Cache-Control": "no-store" });
       }
 
       if (req.method === "POST" && url.pathname === "/v1/chat/completions") {
@@ -122,8 +129,16 @@ export function createApp(router: Router, settings: Settings) {
           "X-Router-Model": route.model,
           "X-Router-May-Train": String(route.provider.dataUse === "may-train"),
         });
-        if (!response.body) return res.end();
+        const promptTokens = estimateTokens(parsed.request.messages);
+        if (!response.body) {
+          router.record(route, promptTokens);
+          return res.end();
+        }
         const upstream = Readable.fromWeb(response.body as import("node:stream/web").ReadableStream);
+        // Count the reply's tokens for the budget meter as it passes through (the text itself isn't kept).
+        const tap = new UsageTap(parsed.request.stream);
+        upstream.on("data", (chunk: Uint8Array) => tap.push(chunk));
+        upstream.once("close", () => router.record(route, tap.finish(promptTokens).tokens));
         upstream.on("error", () => res.destroy());
         upstream.pipe(res);
         return;

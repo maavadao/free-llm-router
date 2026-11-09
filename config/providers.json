@@ -1,26 +1,34 @@
 {
-  "$comment": "Free-tier providers and the models maava AI offers. Free tiers change often: check each provider's limits and terms before relying on them. Providers with a keyEnv are used only when that key is set; keyless providers (OVHcloud, Kilo Code, LLM7) work out of the box, so the router answers with no keys at all. Keyless limits are per IP, so every member shares them. Limits are per key; the router keeps under them and fails over when a provider says no. dataUse: 'no-training' (the provider says prompts aren't used for training), 'may-train' (free-tier prompts may be used to train or improve models), or 'unknown'. Checked 2026-11-09 against https://github.com/mnfst/awesome-free-llm-apis.",
+  "$comment": "Free-tier providers and the models maava AI offers. Free tiers change often: check each provider's limits and terms before relying on them. Providers with a keyEnv are used only when that key is set; keyless providers (OVHcloud, Kilo Code, LLM7) work out of the box, so the router answers with no keys at all. Keyless limits are per IP, so every member shares them. Limits are per key; the router keeps under them and fails over when a provider says no. dataUse: 'no-training' (the provider says prompts aren't used for training), 'may-train' (free-tier prompts may be used to train or improve models), or 'unknown'. terms: 'ok' (the provider's terms plainly allow serving people through it) or 'caution' (read them before relying on it; ratings follow OmniRoute's ToS table). freeTier: the published free allowance, shown on /v1/budget; tpd: tokens a day per model or pool. Aliases list routes in tiers (a nested list is one tier): tiers are tried in order and the alias's strategy (priority, round-robin, least-used, headroom) orders the routes within a tier. Checked 2026-11-09 against https://github.com/mnfst/awesome-free-llm-apis.",
   "providers": {
     "groq": {
       "name": "Groq",
       "baseUrl": "https://api.groq.com/openai/v1",
       "keyEnv": "GROQ_API_KEY",
       "dataUse": "unknown",
+      "terms": "caution",
+      "freeTier": {
+        "note": "Free plan: limits per model, about 200,000 tokens a day each.",
+        "source": "https://console.groq.com/docs/rate-limits"
+      },
       "models": {
         "openai/gpt-oss-120b": {
           "context": 131072,
           "rpm": 30,
-          "rpd": 1000
+          "rpd": 1000,
+          "tpd": 200000
         },
         "openai/gpt-oss-20b": {
           "context": 131072,
           "rpm": 30,
-          "rpd": 1000
+          "rpd": 1000,
+          "tpd": 200000
         },
         "qwen/qwen3.8-27b": {
           "context": 131072,
           "rpm": 30,
-          "rpd": 1000
+          "rpd": 1000,
+          "tpd": 200000
         }
       }
     },
@@ -29,6 +37,12 @@
       "baseUrl": "https://api.cerebras.ai/v1",
       "keyEnv": "CEREBRAS_API_KEY",
       "dataUse": "unknown",
+      "terms": "caution",
+      "freeTier": {
+        "tokensPerDay": 1000000,
+        "note": "Free tier: 1M tokens a day, 30 requests a minute.",
+        "source": "https://inference-docs.cerebras.ai/support/rate-limits"
+      },
       "models": {
         "gpt-oss-120b": {
           "context": 8192,
@@ -47,6 +61,11 @@
       "baseUrl": "https://integrate.api.nvidia.com/v1",
       "keyEnv": "NVIDIA_API_KEY",
       "dataUse": "may-train",
+      "terms": "caution",
+      "freeTier": {
+        "note": "Free developer access, rate-limited (about 40 requests a minute), no token cap published.",
+        "source": "https://build.nvidia.com/"
+      },
       "models": {
         "nvidia/nemotron-3-ultra-550b-a55b": {
           "context": 1000000,
@@ -70,6 +89,12 @@
       "baseUrl": "https://api.mistral.ai/v1",
       "keyEnv": "MISTRAL_API_KEY",
       "dataUse": "may-train",
+      "terms": "caution",
+      "freeTier": {
+        "tokensPerMonth": 1000000000,
+        "note": "Experiment plan: about 1B tokens a month, shown in Mistral’s console; prompts may be used for training.",
+        "source": "https://console.mistral.ai/limits"
+      },
       "models": {
         "mistral-medium-latest": {
           "context": 262144,
@@ -86,6 +111,12 @@
       "baseUrl": "https://openrouter.ai/api/v1",
       "keyEnv": "OPENROUTER_API_KEY",
       "dataUse": "may-train",
+      "terms": "caution",
+      "freeTier": {
+        "note": "50 requests a day across every :free model (1,000 after a one-time $10 top-up).",
+        "source": "https://openrouter.ai/docs/api-reference/limits"
+      },
+      "$comment": "OpenRouter's 20 RPM and 50 RPD are shared across all :free models, hence the shared pool.",
       "models": {
         "nvidia/nemotron-3-ultra-550b-a55b:free": {
           "context": 1000000,
@@ -99,14 +130,14 @@
           "rpd": 50,
           "pool": "free"
         }
-      },
-      "$comment": "OpenRouter's 20 RPM and 50 RPD are shared across all :free models, hence the shared pool."
+      }
     },
     "gemini": {
       "name": "Google Gemini",
       "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
       "keyEnv": "GEMINI_API_KEY",
       "dataUse": "may-train",
+      "terms": "caution",
       "enabled": false,
       "$comment": "Off by default: Google's terms require Paid Services when an app is offered to users in the EEA, Switzerland or the UK. Turn on only with a paid key or for a deployment that serves no one there.",
       "models": {
@@ -120,6 +151,11 @@
       "name": "OVHcloud AI Endpoints",
       "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
       "dataUse": "unknown",
+      "terms": "ok",
+      "freeTier": {
+        "note": "Anonymous: 2 requests a minute per IP and model, no token cap.",
+        "source": "https://endpoints.ai.cloud.ovh.net/"
+      },
       "$comment": "Keyless anonymous tier: 2 requests a minute per IP, per model. Hosted in the EU.",
       "models": {
         "gpt-oss-120b": {
@@ -152,6 +188,11 @@
       "name": "Kilo Code",
       "baseUrl": "https://api.kilo.ai/api/gateway",
       "dataUse": "may-train",
+      "terms": "caution",
+      "freeTier": {
+        "note": "Free pool: 200 requests an hour per IP across :free models.",
+        "source": "https://kilo.ai/docs"
+      },
       "$comment": "Keyless free pool: 200 requests an hour per IP, shared by every :free model (hence the pool and 3 a minute). Kilo says the free pool may route to providers that log prompts, and NVIDIA's free endpoints log use to improve NVIDIA products.",
       "models": {
         "nvidia/nemotron-3-ultra-550b-a55b:free": {
@@ -175,6 +216,11 @@
       "name": "LLM7.io",
       "baseUrl": "https://api.llm7.io/v1",
       "dataUse": "unknown",
+      "terms": "caution",
+      "freeTier": {
+        "note": "Anonymous use of the turbo models; limits aren’t published.",
+        "source": "https://llm7.io/"
+      },
       "$comment": "Keyless anonymous access to the 'turbo' models. Limits for anonymous use aren't published (a free token gets 60 a minute and 250 an hour), so the router stays well under.",
       "models": {
         "gpt-oss:20b": {
@@ -190,92 +236,244 @@
           "rpm": 4
         }
       }
+    },
+    "glm": {
+      "name": "Z.AI (GLM Flash)",
+      "baseUrl": "https://api.z.ai/api/paas/v4",
+      "keyEnv": "ZAI_API_KEY",
+      "dataUse": "unknown",
+      "terms": "ok",
+      "freeTier": {
+        "note": "GLM Flash models are free with no token cap; Z.AI limits how many requests run at once.",
+        "source": "https://docs.z.ai/guides/overview/pricing"
+      },
+      "models": {
+        "glm-4.7-flash": {
+          "context": 200000,
+          "rpm": 10
+        },
+        "glm-4.5-flash": {
+          "context": 131072,
+          "rpm": 10
+        }
+      }
+    },
+    "sealion": {
+      "name": "SEA-LION (AI Singapore)",
+      "baseUrl": "https://api.sea-lion.ai/v1",
+      "keyEnv": "SEALION_API_KEY",
+      "dataUse": "unknown",
+      "terms": "ok",
+      "freeTier": {
+        "note": "Free key (no card): 10 requests a minute. Models tuned for South-East Asian languages.",
+        "source": "https://docs.sea-lion.ai/guides/inferencing/api"
+      },
+      "$comment": "The 10 a minute is per key across models, hence the shared pool.",
+      "models": {
+        "aisingapore/Gemma-SEA-LION-v4-27B-IT": {
+          "context": 131072,
+          "rpm": 10,
+          "pool": "key"
+        },
+        "aisingapore/Qwen-SEA-LION-v4.5-27B-IT": {
+          "context": 32768,
+          "rpm": 10,
+          "pool": "key"
+        },
+        "aisingapore/Llama-SEA-LION-v3.5-70B-R": {
+          "context": 131072,
+          "rpm": 10,
+          "pool": "key"
+        }
+      }
+    },
+    "cloudflare": {
+      "name": "Cloudflare Workers AI",
+      "baseUrl": "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/v1",
+      "keyEnv": "CLOUDFLARE_API_TOKEN",
+      "dataUse": "no-training",
+      "terms": "caution",
+      "freeTier": {
+        "tokensPerDay": 1000000,
+        "note": "Free plan: 10,000 Neurons a day across models, roughly 1M tokens (about 150 replies from Llama 3.3 70B).",
+        "source": "https://developers.cloudflare.com/workers-ai/platform/pricing/"
+      },
+      "$comment": "Needs CLOUDFLARE_ACCOUNT_ID as well as an API token with Workers AI read permission. Neurons are shared by every model, hence the shared pool.",
+      "models": {
+        "@cf/openai/gpt-oss-120b": {
+          "context": 128000,
+          "pool": "neurons"
+        },
+        "@cf/meta/llama-3.3-70b-instruct-fp8-fast": {
+          "context": 24000,
+          "pool": "neurons"
+        },
+        "@cf/google/gemma-4-26b-a4b-it": {
+          "context": 262144,
+          "pool": "neurons"
+        },
+        "@cf/zai-org/glm-4.7-flash": {
+          "context": 131072,
+          "pool": "neurons"
+        }
+      }
     }
   },
   "aliases": {
     "auto": {
       "label": "Auto",
-      "description": "The best free model that's available right now.",
+      "description": "The best free model that’s available right now.",
+      "strategy": "headroom",
       "routes": [
-        "groq/openai/gpt-oss-120b",
-        "cerebras/gpt-oss-120b",
-        "ovh/gpt-oss-120b",
-        "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
-        "ovh/Qwen3.5-397B-A17B",
-        "kilo/nvidia/nemotron-3-ultra-550b-a55b:free",
-        "mistral/mistral-medium-latest",
-        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
-        "ovh/Meta-Llama-3_3-70B-Instruct",
-        "groq/qwen/qwen3.8-27b",
-        "cerebras/qwen-3-235b-a22b-instruct-2507",
-        "ovh/Qwen3.8-27B",
-        "llm7/llama-4-maverick",
-        "groq/openai/gpt-oss-20b",
-        "ovh/gpt-oss-20b",
-        "llm7/gpt-oss:20b",
-        "nvidia/openai/gpt-oss-20b",
-        "kilo/kilo-auto/free",
-        "mistral/mistral-small-latest",
-        "ovh/Mistral-Small-3.2-24B-Instruct-2506",
+        [
+          "groq/openai/gpt-oss-120b",
+          "cerebras/gpt-oss-120b",
+          "cloudflare/@cf/openai/gpt-oss-120b",
+          "ovh/gpt-oss-120b"
+        ],
+        [
+          "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
+          "ovh/Qwen3.5-397B-A17B",
+          "cerebras/qwen-3-235b-a22b-instruct-2507",
+          "mistral/mistral-medium-latest",
+          "kilo/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
+        ],
+        [
+          "ovh/Meta-Llama-3_3-70B-Instruct",
+          "cloudflare/@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+          "glm/glm-4.7-flash",
+          "groq/qwen/qwen3.8-27b",
+          "ovh/Qwen3.8-27B",
+          "llm7/llama-4-maverick",
+          "nvidia/google/gemma-4-31b-it",
+          "sealion/aisingapore/Gemma-SEA-LION-v4-27B-IT"
+        ],
+        [
+          "groq/openai/gpt-oss-20b",
+          "ovh/gpt-oss-20b",
+          "llm7/gpt-oss:20b",
+          "nvidia/openai/gpt-oss-20b",
+          "glm/glm-4.5-flash",
+          "kilo/kilo-auto/free",
+          "mistral/mistral-small-latest",
+          "ovh/Mistral-Small-3.2-24B-Instruct-2506"
+        ],
         "gemini/gemini-2.5-flash"
       ]
     },
     "gpt-oss-120b": {
       "label": "GPT-OSS 120B",
-      "description": "OpenAI's open-weight model. Strong all-rounder.",
+      "description": "OpenAI’s open-weight model. Strong all-rounder.",
+      "strategy": "headroom",
       "routes": [
-        "groq/openai/gpt-oss-120b",
-        "cerebras/gpt-oss-120b",
-        "ovh/gpt-oss-120b"
+        [
+          "groq/openai/gpt-oss-120b",
+          "cerebras/gpt-oss-120b",
+          "cloudflare/@cf/openai/gpt-oss-120b",
+          "ovh/gpt-oss-120b"
+        ]
       ]
     },
     "qwen": {
       "label": "Qwen 3.5",
-      "description": "Alibaba's open model. Good at maths, code and many languages.",
+      "description": "Alibaba’s open model. Good at maths, code and many languages.",
+      "strategy": "headroom",
       "routes": [
-        "ovh/Qwen3.5-397B-A17B",
-        "cerebras/qwen-3-235b-a22b-instruct-2507",
-        "groq/qwen/qwen3.8-27b",
-        "ovh/Qwen3.8-27B"
+        [
+          "ovh/Qwen3.5-397B-A17B",
+          "cerebras/qwen-3-235b-a22b-instruct-2507"
+        ],
+        [
+          "groq/qwen/qwen3.8-27b",
+          "ovh/Qwen3.8-27B"
+        ]
       ]
     },
     "llama": {
       "label": "Llama",
-      "description": "Meta's open models.",
+      "description": "Meta’s open models.",
+      "strategy": "headroom",
       "routes": [
-        "ovh/Meta-Llama-3_3-70B-Instruct",
+        [
+          "ovh/Meta-Llama-3_3-70B-Instruct",
+          "cloudflare/@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+        ],
         "llm7/llama-4-maverick"
       ]
     },
     "nemotron-ultra": {
       "label": "Nemotron 3 Ultra",
-      "description": "NVIDIA's largest open model, with a very long context.",
+      "description": "NVIDIA’s largest open model, with a very long context.",
+      "strategy": "headroom",
       "routes": [
-        "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
-        "kilo/nvidia/nemotron-3-ultra-550b-a55b:free",
-        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
+        [
+          "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
+          "kilo/nvidia/nemotron-3-ultra-550b-a55b:free",
+          "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
+        ]
+      ]
+    },
+    "glm": {
+      "label": "GLM Flash",
+      "description": "Z.AI’s fast open model. Good at code and Chinese.",
+      "strategy": "headroom",
+      "routes": [
+        [
+          "glm/glm-4.7-flash",
+          "cloudflare/@cf/zai-org/glm-4.7-flash"
+        ],
+        "glm/glm-4.5-flash"
+      ]
+    },
+    "gemma": {
+      "label": "Gemma 4",
+      "description": "Google’s open model. Good at writing and many languages.",
+      "strategy": "headroom",
+      "routes": [
+        [
+          "nvidia/google/gemma-4-31b-it",
+          "cloudflare/@cf/google/gemma-4-26b-a4b-it"
+        ]
+      ]
+    },
+    "sea-lion": {
+      "label": "SEA-LION",
+      "description": "AI Singapore’s models for South-East Asian languages.",
+      "strategy": "priority",
+      "routes": [
+        "sealion/aisingapore/Gemma-SEA-LION-v4-27B-IT",
+        "sealion/aisingapore/Qwen-SEA-LION-v4.5-27B-IT",
+        "sealion/aisingapore/Llama-SEA-LION-v3.5-70B-R"
       ]
     },
     "mistral": {
       "label": "Mistral",
-      "description": "Mistral's European models. Good at writing and languages.",
+      "description": "Mistral’s European models. Good at writing and languages.",
+      "strategy": "headroom",
       "routes": [
         "mistral/mistral-medium-latest",
-        "mistral/mistral-small-latest",
-        "ovh/Mistral-Small-3.2-24B-Instruct-2506",
-        "llm7/mistral-Small-24B-Instruct-2501"
+        [
+          "mistral/mistral-small-latest",
+          "ovh/Mistral-Small-3.2-24B-Instruct-2506",
+          "llm7/mistral-Small-24B-Instruct-2501"
+        ]
       ]
     },
     "fast": {
       "label": "Fast",
       "description": "A smaller model for quick answers.",
+      "strategy": "least-used",
       "routes": [
-        "groq/openai/gpt-oss-20b",
-        "ovh/gpt-oss-20b",
-        "llm7/gpt-oss:20b",
-        "nvidia/openai/gpt-oss-20b",
-        "kilo/nvidia/nemotron-3.5-lightning:free",
-        "openrouter/nvidia/nemotron-3.5-lightning:free"
+        [
+          "groq/openai/gpt-oss-20b",
+          "ovh/gpt-oss-20b",
+          "llm7/gpt-oss:20b",
+          "nvidia/openai/gpt-oss-20b",
+          "glm/glm-4.5-flash",
+          "kilo/nvidia/nemotron-3.5-lightning:free",
+          "openrouter/nvidia/nemotron-3.5-lightning:free"
+        ]
       ]
     }
   }
