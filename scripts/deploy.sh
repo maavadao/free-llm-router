@@ -16,7 +16,7 @@ for p in "${PROVIDERS[@]}"; do
     echo "  using $p key"
   fi
 done
-used=(free-llm-router-token $(for p in "${PROVIDERS[@]}"; do secret_exists "$(secret_name "$p")" && secret_name "$p"; done))
+used=(free-llm-router-token $(for p in "${PROVIDERS[@]}"; do if secret_exists "$(secret_name "$p")"; then secret_name "$p"; fi; done))
 if secret_exists "$CF_ACCOUNT_SECRET"; then
   secrets+=",CLOUDFLARE_ACCOUNT_ID=$CF_ACCOUNT_SECRET:latest"
   used+=("$CF_ACCOUNT_SECRET")

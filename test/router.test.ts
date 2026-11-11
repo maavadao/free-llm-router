@@ -159,7 +159,7 @@ test("HTTP: needs the token, lists models and streams the upstream reply through
     );
     const res = await fetch(`${base}/v1/chat/completions`, {
       method: "POST",
-      headers: { Authorization: "Bearer secret", "Content-Type": "application/json", "X-Router-User": "u1" },
+      headers: { "X-Router-Token": "secret", "Content-Type": "application/json", "X-Router-User": "u1" },
       body: JSON.stringify({ model: "auto", stream: true, max_tokens: 100, messages: [{ role: "user", content: "hi" }] }),
     });
     assert.equal(res.status, 200);

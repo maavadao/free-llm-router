@@ -29,7 +29,11 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
 
 function authorised(req: IncomingMessage, settings: Settings) {
   if (settings.tokens.length === 0) return settings.dev;
-  const given = Buffer.from((req.headers.authorization ?? "").replace(/^Bearer\s+/i, ""));
+  // X-Router-Token first: on Cloud Run a Bearer token in Authorization is checked as a Google
+  // identity token before it reaches the router, so the website sends its token in this header.
+  const header = req.headers["x-router-token"];
+  const raw = (Array.isArray(header) ? header[0] : header) ?? (req.headers.authorization ?? "").replace(/^Bearer\s+/i, "");
+  const given = Buffer.from(raw);
   return settings.tokens.some((t) => {
     const want = Buffer.from(t);
     return want.length === given.length && timingSafeEqual(want, given);

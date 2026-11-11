@@ -23,7 +23,7 @@ You ask for a model by a friendly name (`auto`, `gpt-oss-120b`, `qwen`…). The 
 | `GET /v1/budget` | The free-tier budget meter: per provider, its status (`ready`, `cooling down`, `no key`, `switched off`, `may train`), keyless or not, data use, terms rating, requests and tokens today and this month, its free allowance and the share used, and per model its limits, today's use and headroom (0 to 1). Totals across providers, with the published monthly token allowance of the ones that are on. No prompts or users. |
 | `GET /health` | Liveness, no token needed. |
 
-Every `/v1` call needs `Authorization: Bearer <one of ROUTER_TOKENS>`. Send `X-Router-User: <member id>` to apply per-member limits.
+Every `/v1` call needs one of `ROUTER_TOKENS`, as `X-Router-Token: <token>` or `Authorization: Bearer <token>`. On Cloud Run use `X-Router-Token`: Cloud Run reads a Bearer token as a Google identity token and refuses the request before it reaches the router. Send `X-Router-User: <member id>` to apply per-member limits.
 
 ## Run it
 
